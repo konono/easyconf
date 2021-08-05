@@ -41,10 +41,14 @@ options:
     value:
         description:
             - Set the value to be assigned to key.
-        required: true
+        required: false
     state:
         description:
-            - Set the state taht present or absent.
+            - Set the state taht present or absent, check.
+        required: false
+    backup:
+        description:
+            - Set the true if you need src file backup.
         required: false
 
 author:
@@ -118,15 +122,11 @@ EXAMPLES = '''
 
 RETURN = '''
 message:
-    description: The output message that the test module generates
-    type: str
-    returned: always
+    value: Return the value of the key that was matched if set check to the state.  # noqa: E501
 '''
 
 import shutil  # noqa: E402
-import tempfile  # noqa: E402
 import os  # noqa: E402
-import q  # noqa: E402
 import re  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
@@ -153,7 +153,7 @@ def main():
         argument_spec=dict(
             src=dict(type='str', required=True),
             key=dict(type='str', required=True),
-            value=dict(type='raw', required=True),
+            value=dict(type='raw', required=False),
             state=dict(type='str', required=True),
             backup=dict(type='bool', default=False),
         ),
@@ -161,7 +161,7 @@ def main():
     )
 
     result = dict(
-        msg=False,
+        value=False,
         changed=False
     )
 
@@ -176,18 +176,17 @@ def main():
         module.fail_json(msg="Source %s not found" % (src))
     if not os.access(b_src, os.R_OK):
         module.fail_json(msg="Source %s not readable" % (src))
-
     if not os.path.isfile(src):
         module.fail_json(msg="Source %s is not file" % (src))
-
     if state not in ['present', 'absent', 'check']:
         module.fail_json(msg="%s is not support" % (state))
+    if state in ['present', 'absent'] and value is None:
+        module.fail_json(
+            msg="If state is not check,the value parameter is required."
+            )
 
-    _, b_mysrc = tempfile.mkstemp(dir=os.path.dirname(src))
-    easyconf = EasyConf(src, b_mysrc, state)
-
+    easyconf = EasyConf(src, state)
     match = easyconf.match_config(key)
-    q(match)
     if state == 'present':
         if match:
             if value == match:
@@ -203,7 +202,7 @@ def main():
         else:
             module.exit_json(**result)
     elif state == 'check':
-        result['msg'] = match
+        result['value'] = match
         module.exit_json(**result)
 
     if backup:
@@ -215,9 +214,7 @@ def main():
     if not res:
         module.fail_json(msg="%s is not support" % (easyconf.path.suffix))
 
-    module.atomic_move(b_mysrc, src)
     result['changed'] = True
-
     module.exit_json(**result)
 
 

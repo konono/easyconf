@@ -24,7 +24,7 @@ def represent_str(dumper, instance):
 
 
 class EasyConf:
-    def __init__(self, path, dest=None, state="present"):
+    def __init__(self, path, state="present", dest=None):
         self.path = pathlib.Path(path)
         if dest:
             self.dest = pathlib.Path(dest)
