@@ -3,7 +3,7 @@ easyconf
 
 ### easyconf
 
-このcustom pluginはansible上でyaml、jsonファイルの編集を簡単に行えるものです。
+このcustom pluginはansible上でyaml、jsonファイルの編集を簡単に行えるものです。
 
 Requirements
 ------------
