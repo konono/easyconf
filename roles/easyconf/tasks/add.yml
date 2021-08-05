@@ -1,0 +1,22 @@
+---
+
+- name: 'Add pattern 1'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'config.person[3]'
+    value: { "name": "delta", "gender": "female", "age": 21}
+    state: 'present'
+
+- name: 'Add pattern 2'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'config.fruits'
+    value: ["banana", "peach", "mikan"]
+    state: 'present'
+
+- name: 'Add pattern 3'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'my.favorite.whiskey'
+    value: "kavalan"
+    state: 'present'

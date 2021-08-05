@@ -1,0 +1,22 @@
+---
+
+- name: 'Delete pattern 1'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'config.person[3]'
+    value: { "name": "yuri", "gender": "female", "age": 21}
+    state: 'absent'
+
+- name: 'Delete pattern 2'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'config.fruits'
+    value: 'orange'
+    state: 'absent'
+
+- name: 'Delete pattern 3'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'my.favorite.whiskey'
+    value: "macallan"
+    state: 'absent'

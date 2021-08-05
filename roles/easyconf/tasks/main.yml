@@ -1,0 +1,5 @@
+---
+
+- import_tasks: 'add.yml'
+- import_tasks: 'mod.yml'
+- import_tasks: 'del.yml'

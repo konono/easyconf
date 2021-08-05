@@ -1,0 +1,10 @@
+*~
+*.swp
+*.swo
+.vagrant
+*.log
+__pycache__
+.DS_Store
+.pytest_cache
+.test-results
+.tox

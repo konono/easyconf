@@ -1,0 +1,11 @@
+config:
+  person:
+    - name: alpha
+      gender: male
+      age: 21
+    - name: bravo
+      gender: male
+      age: 24
+    - name: charlie
+      gender: female
+      age: 32
