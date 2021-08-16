@@ -122,8 +122,11 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-message:
-    value: Return the value of the key that was matched if set check to the state.  # noqa: E501
+value:
+   description: Return the value of the key that was matched if set check to the state.  # noqa: E501
+   returned: success
+   type: raw
+   sample: 'value'
 '''
 
 import shutil  # noqa: E402
