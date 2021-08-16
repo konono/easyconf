@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from ansible_collections.konono.easyconf.plugins.module_utils.easyconf import EasyConf
