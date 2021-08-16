@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import anyconfig
 import copy
 import jmespath
@@ -126,10 +129,10 @@ class EasyConf:
     def _modify_nested_dict(self, key, keys, value, d, n=0):
         if n < len(keys) - 1:
             try:
-                # $B<!$N(Bnest$B$KF~$C$F$$$k(Bvalue$B$,(Blist$B$G$"$C$?>l9g$O$=$N$^$^:F5"$G8F$S=P$7(B
+                # 次のnestに入っているvalueがlistであった場合はそのまま再帰で呼び出し
                 if isinstance(d[keys[n]][keys[n + 1]], list):
                     self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
-                # $B<!$N(Bnest$B$KF~$C$F$$$k(Bvalue$B$,(Bdictionary$B0J30$+$D!"(Bstate$B$,(Bpresent$B$G$"$C$?>l9g$O<!$N(Bnest$B$N(Bvalue$B$r=i4|2=(B
+                # 次のnestに入っているvalueがdictionary以外かつ、stateがpresentであった場合は次のnestのvalueを初期化
                 elif (
                     not isinstance(d[keys[n]][keys[n + 1]], (dict))
                     and self.state == "present"
@@ -142,18 +145,18 @@ class EasyConf:
                 try:
                     self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
                 except KeyError:
-                    # nest$B$5$l$k(Bkey$B$,$b$7$b$J$+$C$?>l9g$O?7$?$K:n@.(B
+                    # nestされるkeyがもしもなかった場合は新たに作成
                     d[keys[n]] = {}
                     self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
         else:
-            # key$B$K(Bvalue$B$rF~$l$h$&$H$7$?>l9g$K(Bkey$B$K(Blist$B$h$jD9$$CM$,Mh$F$$$?>l9g$O(Bappend
+            # keyにvalueを入れようとした場合にkeyにlistより長い値が来ていた場合はappend
             if self.state == "present":
                 try:
                     d[keys[n]] = value
                 except IndexError:
                     match = self.match_config(key)
                     if not match:
-                        # list$B$h$jBg$-$$(Bindex$B$rEO$5$l$?>l9g$O(Blist$B$N:G8e$K$"$k(Bvalue$B$H0z?t$N(Bvalue$B$rHf3S$7$FF10l$G$J$$$J$iDI2C$9$k(B
+                        # listより大きいindexを渡された場合はlistの最後にあるvalueと引数のvalueを比較して同一でないなら追加する
                         if (
                             self.match_config(re.sub(r"\[-?\d+\]", "[-1]", key))  # noqa: E501
                             != value
@@ -170,16 +173,3 @@ class EasyConf:
                             del d[keys[n]]
                         except KeyError:
                             pass
-#
-#
-# src='~/test.yml'
-# state='present'
-# key = 'aaa.bbb.ccc'
-# value = 'ddd'
-# easyconf = EasyConf(src, state)
-# match = easyconf.match_config(key)
-# print(match)
-# conf = easyconf._load_config()
-# print(conf)
-# conf = easyconf.update_config(key, value)
-# print(conf)
