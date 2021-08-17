@@ -59,66 +59,74 @@ author:
 EXAMPLES = '''
 - name: 'Test add pattern 1 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'config.d'
     value: 30
     state: 'present'
 
 - name: 'Test add pattern 2 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'config.a-b'
     value: 'c'
     state: 'present'
 
 - name: 'Test add pattern 3 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'config.e'
     value: [1,2,3,4]
     state: 'present'
 
 - name: 'Test add pattern 4 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'config.f'
     value: [{a: 1, b: 2},{c: 3, d: 4}]
     state: 'present'
 
 - name: 'Test add pattern 5 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'lists[2]'
     value: 100
     state: 'present'
 
 - name: 'Test modify pattern 1 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'config.a'
     value: 100
     state: 'present'
 
 - name: 'Test modify pattern 2 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'lists[0]'
     value: 100
     state: 'present'
 
 - name: 'Test delete pattern 1 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'lists[0]'
     value: 0
     state: 'absent'
 
 - name: 'Test delete pattern 2 yaml'
   konono.easyconf.easyconf:
-    src: '/Users/yyamashi/test.yml'
+    src: '{{ playbook_dir }}/tests/test.yml'
     key: 'lists[0]'
     value: 100
     state: 'absent'
+
+- name: 'Test check pattern 1 yaml'
+  konono.easyconf.ezconf:
+    src: '{{ playbook_dir }}/tests/test.yml'
+    key: 'my'
+    state: 'check'
+  register: res
+
 '''
 
 RETURN = '''
