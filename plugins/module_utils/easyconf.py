@@ -4,8 +4,10 @@
 import anyconfig
 import copy
 import jmespath
+import json
 import pathlib
 import re
+import sys
 import yaml
 
 
@@ -36,21 +38,44 @@ class EasyConf:
         self.state = state
 
     def match_config(self, key, conf=None):
-        key = re.sub(r"[^a-zA-Z0-9_\-.\[\]]", "", key)
-        if not conf:
-            conf = self._load_config()
-        escaped_query = self._escape_query(key)
-        if escaped_query != key:
-            match = jmespath.search(escaped_query, conf)
-        else:
-            match = jmespath.search(key, conf)
-        return match
+        conf = conf or self._load_config()
+        if isinstance(conf, dict):
+            key = re.sub(r"[^a-zA-Z0-9_\-.\[\]]", "", key)
+            escaped_query = self._escape_query(key)
+            if escaped_query != key:
+                match = jmespath.search(escaped_query, conf)
+            else:
+                match = jmespath.search(key, conf)
+            return match
+        elif isinstance(conf, list):
+            key = re.sub(r"[^0-9\-]", "", str(key))
+            try:
+                match = conf[int(key)]
+            except IndexError:
+                match = None
+            return match
 
-    def update_config(self, key, value):
-        key = re.sub(r"[^a-zA-Z0-9_\-.\[\]]", "", key)
-        conf = self._load_config()
-        e_keys = self._expand_list(key)
-        self._modify_nested_dict(key, e_keys, value, conf)
+    def update_config(self, key, value, conf=None, state=None):
+        conf = conf or self._load_config()
+        state = state or self.state
+        if isinstance(conf, list):
+            key = re.sub(r"[^0-9\-]", "", str(key))
+            if state == 'present':
+                if '-' in str(key):
+                    if str(key) == '-1':
+                        conf.append(value)
+                    else:
+                        conf.insert(int(key) + 1, value)
+                else:
+                    conf.insert(int(key), value)
+                return conf
+            elif state == 'absent':
+                conf.pop(int(key))
+                return conf
+        elif isinstance(conf, dict):
+            key = re.sub(r"[^a-zA-Z0-9_\-.\[\]]", "", key)
+            e_keys = self._expand_list(key)
+            self._modify_nested_dict(key, e_keys, value, conf, state)
         return conf
 
     def dump_config(self, conf):
@@ -123,34 +148,45 @@ class EasyConf:
         return ".".join(splited_keys)
 
     def _load_config(self):
-        conf = anyconfig.load(self.path)
+        try:
+            conf = anyconfig.load(self.path)
+        except (yaml.YAMLError, json.decoder.JSONDecodeError,
+                yaml.parser.ParserError) as e:
+            sys.stderr.write(e)
+            return False
         return conf
 
-    def _modify_nested_dict(self, key, keys, value, d, n=0):
+    def _modify_nested_dict(self, key, keys, value, d, state, n=0):
         if n < len(keys) - 1:
             try:
                 # 次のnestに入っているvalueがlistであった場合はそのまま再帰で呼び出し
-                if isinstance(d[keys[n]][keys[n + 1]], list):
-                    self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
+                if isinstance(d[keys[n]][keys[n + 1]],
+                              list):
+                    self._modify_nested_dict(key, keys, value,
+                                             d[keys[n]], state, n+1)
                 # 次のnestに入っているvalueがdictionary以外かつ、stateがpresentであった場合は次のnestのvalueを初期化
                 elif (
                     not isinstance(d[keys[n]][keys[n + 1]], (dict))
-                    and self.state == "present"
+                    and state == "present"
                 ):
                     d[keys[n]][keys[n + 1]] = {}
-                    self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
+                    self._modify_nested_dict(key, keys, value,
+                                             d[keys[n]], state, n+1)
                 else:
-                    self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
+                    self._modify_nested_dict(key, keys, value,
+                                             d[keys[n]], state, n+1)
             except (KeyError, IndexError):
                 try:
-                    self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
+                    self._modify_nested_dict(key, keys, value,
+                                             d[keys[n]], state, n+1)
                 except KeyError:
                     # nestされるkeyがもしもなかった場合は新たに作成
                     d[keys[n]] = {}
-                    self._modify_nested_dict(key, keys, value, d[keys[n]], n+1)
+                    self._modify_nested_dict(key, keys, value,
+                                             d[keys[n]], state, n+1)
         else:
             # keyにvalueを入れようとした場合にkeyにlistより長い値が来ていた場合はappend
-            if self.state == "present":
+            if state == "present":
                 try:
                     d[keys[n]] = value
                 except IndexError:
@@ -165,7 +201,7 @@ class EasyConf:
                     else:
                         if match == value:
                             pass
-            elif self.state == "absent":
+            elif state == "absent":
                 match = self.match_config(key)
                 if match:
                     if match == value:
