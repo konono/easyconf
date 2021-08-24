@@ -201,7 +201,7 @@ def main():
 
     easyconf = EasyConf(src, state)
     if not easyconf._load_config:
-        module.fail_json(msg="%s is invalid format" % (easyconf.path.suffix))
+        module.fail_json(msg="%s is invalid format" % (src))
 
     match = easyconf.match_config(key)
     if state == 'present':
