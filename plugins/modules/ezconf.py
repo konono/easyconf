@@ -139,7 +139,6 @@ value:
 
 import shutil  # noqa: E402
 import os  # noqa: E402
-import re  # noqa: E402
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
 from ansible.module_utils._text import to_bytes  # noqa: E402
