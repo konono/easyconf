@@ -209,8 +209,7 @@ def main():
             if value == match:
                 module.exit_json(**result)
         else:
-            if easyconf.match_config(re.sub(r'\[-?\d+\]', '[-1]', key))\
-                    == value:
+            if easyconf.match_config(key) == value:
                 module.exit_json(**result)
     elif state == 'absent':
         if match:
