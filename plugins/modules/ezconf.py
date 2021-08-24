@@ -190,6 +190,8 @@ def main():
         module.fail_json(msg="Source %s not readable" % (src))
     if not os.path.isfile(src):
         module.fail_json(msg="Source %s is not file" % (src))
+    if not os.path.splitext(src)[-1] in ['.yaml', '.yml', 'json']:
+        module.fail_json(msg="%s is not support" % (os.path.splitext(src)[-1]))
     if state not in ['present', 'absent', 'check']:
         module.fail_json(msg="%s is not support" % (state))
     if state in ['present', 'absent'] and value is None:
@@ -198,6 +200,9 @@ def main():
             )
 
     easyconf = EasyConf(src, state)
+    if not easyconf._load_config:
+        module.fail_json(msg="%s is invalid format" % (easyconf.path.suffix))
+
     match = easyconf.match_config(key)
     if state == 'present':
         if match:
