@@ -1,0 +1,34 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: 'Define fruits'
+      set_fact:
+        config:
+          person:
+            - name: alpha
+              gender: male
+              age: 21
+            - name: bravo
+              gender: male
+              age: 24
+            - name: charlie
+              gender: female
+              age: 32
+
+    - name: 'Debug'
+      debug:
+        msg: '{{ config }}'
+
+    - name: 'Mod pattern 1'
+      konono.easyconf.ezvar:
+        var: '{{ config }}'
+        key: 'person[3]'
+        value: { "name": "delta", "gender": "female", "age": 21}
+        state: 'absent'
+      register: 'config'
+
+    - name: 'Debug'
+      debug:
+        msg: '{{ config }}'

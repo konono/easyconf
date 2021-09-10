@@ -198,7 +198,7 @@ def main():
             msg="If state is not check,the value parameter is required."
             )
 
-    easyconf = EasyConf(src, state)
+    easyconf = EasyConf(path=src, state=state)
     if not easyconf._load_config:
         module.fail_json(msg="%s is invalid format" % (src))
 

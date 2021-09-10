@@ -29,8 +29,11 @@ def represent_str(dumper, instance):
 
 
 class EasyConf:
-    def __init__(self, path, state="present", dest=None):
-        self.path = pathlib.Path(path)
+    def __init__(self, path=None, state="present", dest=None):
+        if path:
+            self.path = pathlib.Path(path)
+        else:
+            self.path = path
         if dest:
             self.dest = pathlib.Path(dest)
         else:
@@ -148,13 +151,15 @@ class EasyConf:
         return ".".join(splited_keys)
 
     def _load_config(self):
-        try:
-            conf = anyconfig.load(self.path)
-        except (yaml.YAMLError, json.decoder.JSONDecodeError,
-                yaml.parser.ParserError) as e:
-            sys.stderr.write(e)
-            return False
-        return conf
+        if self.path:
+            try:
+                conf = anyconfig.load(self.path)
+            except (yaml.YAMLError, json.decoder.JSONDecodeError,
+                    yaml.parser.ParserError) as e:
+                sys.stderr.write(e)
+                return False
+            return conf
+        return False
 
     def _modify_nested_dict(self, key, keys, value, d, state, n=0):
         if n < len(keys) - 1:
